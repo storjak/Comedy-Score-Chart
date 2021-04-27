@@ -1,15 +1,17 @@
 const axios = require('axios').default;
 
 const coreExports = {
-    idGetter: async function (u, id, token) {
+    nameGetter: async function (chId, clId, key) { // channelName = await nameGetter(channelId, sensitive.clientID, authKey);
         const aConfig = {
+            url: 'https://api.twitch.tv/helix/channels?broadcaster_id=' + chId,
             headers: {
-                'Client-ID': id,
-                'Authorization': 'Bearer ' + token
+                'Client-ID': clId,
+                'Authorization': 'Bearer ' + key
             }
         };
         try {
-            return axios(u, aConfig);
+            const res = await axios(aConfig);
+            return res.data.data[0].broadcaster_login;
         } catch (e) {
             return console.error('idGetter error: ' + e);
         }

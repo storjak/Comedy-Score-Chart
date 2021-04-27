@@ -47,12 +47,15 @@ app.get("/config", (req, res) => {
 });
 
 // -------------------------------------------------------------------------------------
-// SOCKET.IO CONNECTION
-
+// GLOBAL VARIABLES
+let channelList = {}; // <<< Object of key pairs for temporary ID storage to reduce API calls, e.g. {channelId: channelName}
 let userCount = 0;
 let broadcastTimer;
 let dcTimer;
-const dcTimerSetting = 60; // <<< SET IN SECONDS, NOT ms
+const dcTimerSetting = 20; // <<< SET IN SECONDS, NOT ms
+// -------------------------------------------------------------------------------------
+// SOCKET.IO CONNECTION
+
 
 function ioPath() {
     io.on("connection", (socket) => {
@@ -64,7 +67,7 @@ function ioPath() {
                 clearTimeout(dcTimer);
                 console.log("Disconnect timer cancelled.");
             } else {
-                tChat.connect();
+                tChat.connect('windowpuncher'); // << CHANNEL NAME HERE
                 console.log("Starting chart update interval timer.");
                 broadcastTimer = setInterval(() => {
                     socket.broadcast.volatile.emit("chart update", tChat.total);
@@ -87,12 +90,13 @@ function ioPath() {
         });
 
         socket.on("channel info", async (channelId) => {
-            let url = 'https://api.twitch.tv/helix/channels?broadcaster_id=' + channelId;
-            try {
-                let res = await core.idGetter(url, sensitive.clientID, authKey);
-                channelName = res.data.data[0].broadcaster_login;
-            } catch (e) {
-                console.error(e.response);
+            if (!channelList[channelId]) {
+                channelName = await core.nameGetter(channelId, sensitive.clientID, authKey);
+                console.log(channelList);
+                channelList[channelId] = channelName;
+                console.log(channelList);
+            } else if (channelList.channelId) {
+                channelName = channelList[channelId];
             }
             console.log(channelName);
         });

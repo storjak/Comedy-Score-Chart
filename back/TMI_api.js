@@ -6,7 +6,7 @@ const tmiExports = {
     connect: function (channelName) {
         const clientOptions = {
             connection: { reconnect: true },
-            channels: ['windowpuncher'] // <<<<<<<<<<<<<<<<<<<< TEMPORARY
+            channels: [channelName]
         };
         let client = new tmi.Client(clientOptions);
         client.connect()
@@ -17,7 +17,7 @@ const tmiExports = {
                 }, 2000);
             })
             .catch((err) => {
-                if (err) console.error(err);
+                console.error(err);
             });
 
         client.on("message", (channel, tags, message, self) => {
