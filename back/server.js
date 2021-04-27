@@ -25,21 +25,25 @@ let casterName;
 
 const port = 3000;
 
+let rootString = __dirname;
+
+rootString = __dirname.substr(0, rootString.length - 5);
+
 http.listen(port, () => {
     console.log(`Listening on port ${port}`);
 });
 
 app.get("/", (req, res) => {
-    res.sendFile('C:\\Users\\Jakes\\Desktop\\Socks\\twitch chart extension\\front\\index.html');
+    res.sendFile(rootString + '\\front\\index.html');
 });
 
 app.get("/graph", (req, res) => {
-    res.sendFile('C:\\Users\\Jakes\\Desktop\\Socks\\twitch chart extension\\front\\graph.html');
-
+    res.sendFile(rootString + '\\front\\graph.html');
 });
 
 app.get("/config", (req, res) => {
-    res.sendFile(`C:\\Users\\Jakes\\Desktop\\Socks\\twitch chart extension\\front\\config.html`);
+    res.sendFile(rootString + '\\front\\config.html');
+
 });
 
 // -------------------------------------------------------------------------------------
