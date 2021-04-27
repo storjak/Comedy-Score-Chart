@@ -4,5 +4,4 @@ const secrets = {
     clientSecret: Buffer.from("Your extensions's client secret", 'base64'),
     apiSecret: "Your extension's secret used for OAuth tokens"
 };
-
 module.exports = secrets;
