@@ -1,15 +1,15 @@
-const app       = require('express')();
-const http      = require('http').createServer(app);
-const io        = require('socket.io')(http);
-const tChat     = require('./TMI_api.js');
-const core      = require('./core_api.js');
+const app = require('express')();
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
+const tChat = require('./TMI_api.js');
+const core = require('./core_api.js');
 const sensitive = require('./sensitive.js');
 
 let authKey;
 let authKeyExpiration;
 let channelName;
 
-(async function() {
+(async function () {
     try {
         let key = await core.authGetter(sensitive.clientID, sensitive.apiSecret);
         authKey = key.data.access_token;
@@ -54,7 +54,7 @@ let broadcastTimer;
 let dcTimer;
 const dcTimerSetting = 60; // <<< SET IN SECONDS, NOT ms
 
-function ioPath (){
+function ioPath() {
     io.on("connection", (socket) => {
         userCount++;
         console.log(`User connected, usercount: ${userCount}`);
