@@ -1,0 +1,119 @@
+<!DOCTYPE HTML>
+<html>
+<style>
+    body {
+        margin: 0px;
+        height: 100vh;
+        overflow: hidden;
+    }
+    #chart-container {
+        /* background-color: rgb(160, 160, 160); */
+        background-color: #1f1f23;
+        position: relative;
+        height: 4000px;
+        width: 4000px;
+        max-height: 100%;
+        max-width: 100%;
+    }
+</style>
+
+<body>
+    <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    
+    <div id="chart-container">
+        <canvas id="chart"></canvas>
+    </div>
+
+    <script>
+        const socket = io();
+        
+
+        window.Twitch.ext.onAuthorized((auth) => {
+            //token = auth.token;
+            //tuid = auth.userId;
+            /*
+            const verReq = new XMLHttpRequest();
+            verReq.open('GET', `/verify?auth=${token}&id=${tuid}`, true);
+            verReq.send();
+            */
+
+            socket.emit("channel info", {
+                token: auth.token,
+                tuid: auth.userId
+            });
+
+        });
+    
+        window.Twitch.ext.onError((error) => {
+            console.error(err);
+        });
+
+        socket.on("chart update"/*<<< make that channel id*/, function(data) {
+            chartUpdate(MyChart, data);
+        });
+
+        const chartUpdate = function (chart, scoreData) {
+            chart.data.datasets[0].data.shift();
+            chart.data.datasets[0].data.push(scoreData);
+            chart.update();
+        }
+
+        const chartOptions = {
+            color: "#E9E9E9",
+            //events: [],        //disables hover-over tooltips when active
+            maintainAspectRatio: false,
+            tooltips: {
+                enabled: true
+            },
+            animation: {
+                duration: 1999,
+                easing: "linear"
+            },
+            hover: {
+                animationDuration: 0,
+            },
+            legend: {
+                display: false
+            },
+            scales: {
+                xAxes: [{
+                    gridLines: {
+                        display: false
+                    },
+                    ticks: {
+                        fontColor: "#f1f1f1"
+
+                    }
+                }],
+                yAxes: [{
+                    ticks: {
+                        fontColor: "#f1f1f1",
+                        stepSize: 1
+                    }
+                }]
+            }
+        }
+
+        const ctx = document.getElementById('chart').getContext('2d');
+
+        const MyChart = new Chart(ctx, {
+            type: "line",
+            data: {
+                labels: ["20", "18", "16", "14", "12", "10", "8s", "6s", "4s", "2s"],
+                datasets: [{
+                    pointBackgroundColor: "#6441a5",
+                    borderColor: "#6441a5",
+                    backgroundColor: "#27272b",
+                    data: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                    lineTension: 0,
+                    hitRadius: 5
+                }]
+            },
+            options: chartOptions
+        });
+    </script>
+</body>
+
+</html>

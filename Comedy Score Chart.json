@@ -1,0 +1,96 @@
+{
+  "allowHttpBackend": false,
+  "backendCommand": "node server",
+  "backendFolderName": "back",
+  "certificateExceptions": [],
+  "extensionViews": [
+    {
+      "channelId": "117349875",
+      "configurationAnchor": "component",
+      "displayChannelName": "smallant",
+      "features": {
+        "isBitsEnabled": false,
+        "isChatEnabled": false,
+        "isSubscriptionStatusAvailable": false
+      },
+      "frameSize": {
+        "width": 852,
+        "height": 480
+      },
+      "id": "1",
+      "isPopout": false,
+      "label": "",
+      "linked": false,
+      "linkedUserId": "",
+      "orientation": "Portrait",
+      "type": "component",
+      "viewerType": "Logged-In Viewer"
+    }
+  ],
+  "manifest": {
+    "anchor": "component",
+    "assetUrls": [],
+    "authorName": "windowpuncher - storjak",
+    "bitsEnabled": false,
+    "canInstall": true,
+    "configUrl": "http://localhost:3000/config",
+    "configurationLocation": "none",
+    "description": "Scores taken from chat, from integers 1 to 9, in the format +x or -x, are compiled and sent to the live graph.  The graph is a rolling global score, so everyone sees the same number, regardless of when they joined.\n\nNobody in the channel is using the graph, it will not run.  If it was previously running, it will shut down in 60 seconds from the time the last person disconnected, or will disconnect when the streamer is not live.\n\nThis extension is still in development and will also be available as a standalone userscript for use with managers like Tampermonkey and Greasemonkey.  It works the same way and has the same features.\n\nDuplicate scores in the same message, such as \"+2 -3\" will not be counted.",
+    "eulaTosUrl": "https://mit-license.org/",
+    "hasChatSupport": false,
+    "iconUrl": "",
+    "iconUrls": {},
+    "id": "2ilkhrt4j2qjfj85s7bxhj560gqnvy",
+    "installationCount": -42,
+    "liveConfigUrl": "http://localhost:3000/config",
+    "name": "Comedy Chart",
+    "panelHeight": 0,
+    "privacyPolicyUrl": "",
+    "requestIdentityLink": false,
+    "requiredBroadcasterAbilities": [],
+    "screenshotUrls": [],
+    "sku": "",
+    "state": "Testing",
+    "subscriptionsSupportLevel": "none",
+    "summary": "Displays a graph in real time according to scores submitted by chat members",
+    "supportEmail": "windowpuncherdev@gmail.com",
+    "vendorCode": "",
+    "version": "0.0.1",
+    "viewerSummary": "In chat, type + or - 1 through 9, e.g. +2, -1, +9",
+    "viewerUrl": "",
+    "viewerUrls": {
+      "component": "http://localhost:3000/graph"
+    },
+    "views": {
+      "component": {
+        "viewerUrl": "http://localhost:3000/graph",
+        "aspectWidth": 0,
+        "aspectHeight": 0,
+        "aspectRatioX": 100,
+        "aspectRatioY": 100,
+        "scalePixels": 0,
+        "targetHeight": 4000,
+        "size": 0,
+        "zoom": false,
+        "zoomPixels": 0,
+        "canLinkExternalContent": false,
+        "autoScale": false
+      },
+      "config": {
+        "viewerUrl": "http://localhost:3000/config",
+        "canLinkExternalContent": false
+      },
+      "liveConfig": {
+        "viewerUrl": "http://localhost:3000/config",
+        "canLinkExternalContent": false
+      }
+    },
+    "whitelistedConfigUrls": [],
+    "whitelistedPanelUrls": []
+  },
+  "frontendCommand": "",
+  "frontendFolderName": "front",
+  "name": "Comedy Score Chart",
+  "usingRandomFrontendHostingPort": false,
+  "version": 3
+}
