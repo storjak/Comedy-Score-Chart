@@ -7,7 +7,7 @@ const sensitive = require('./sensitive.js');
 
 let authKey;
 let authKeyExpiration;
-let casterName;
+let channelName;
 
 (async function() {
     try {
@@ -86,17 +86,15 @@ function ioPath (){
             }
         });
 
-        socket.on("channel info", async (data) => {
-            let payload = core.verifyAndDecode(data.token, sensitive.clientSecret);
-            let url = 'https://api.twitch.tv/helix/channels?broadcaster_id=' + payload.channel_id;
+        socket.on("channel info", async (channelId) => {
+            let url = 'https://api.twitch.tv/helix/channels?broadcaster_id=' + channelId;
             try {
                 let res = await core.idGetter(url, sensitive.clientID, authKey);
-                casterName = res.data.data[0].broadcaster_login;
+                channelName = res.data.data[0].broadcaster_login;
             } catch (e) {
                 console.error(e.response);
             }
-            console.log(casterName);
-
+            console.log(channelName);
         });
     });
 }

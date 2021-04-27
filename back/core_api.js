@@ -1,4 +1,3 @@
-const jwt       = require('jsonwebtoken');
 const axios     = require('axios').default;
 
 const coreExports = {
@@ -21,14 +20,6 @@ const coreExports = {
             return axios(u, {method: 'post'});
         } catch (e) {
             return console.error('authGetter error: ' + e);
-        }
-    },
-    verifyAndDecode: function(header, cSec) {
-        try {
-            return jwt.verify(header, cSec, { algorithms: ['HS256'] });
-        }
-        catch (e) {
-            return console.error(`Invalid JWT: ${e}`);
         }
     }
 }

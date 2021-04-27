@@ -30,18 +30,17 @@
     <script>
         const socket = io();
 
+        let channelId;
         window.Twitch.ext.onAuthorized((auth) => {
-            socket.emit("channel info", {
-                token: auth.token,
-                tuid: auth.userId
-            });
+            channelId = auth.channelId
+            socket.emit("channel info", channelId);
         });
 
         window.Twitch.ext.onError((error) => {
             console.error(err);
         });
 
-        socket.on("chart update"/*<<< make that channel id*/, function (data) {
+        socket.on("chart update"/*<<< need to make that channel id*/, function (data) {
             chartUpdate(MyChart, data);
         });
 
