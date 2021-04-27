@@ -6,7 +6,13 @@ Author - storjak@gmail.com
 
 Features -
 
+    This loads on a Twitch.tv's streamer page during a live stream and will collect and compile a live "comedy" score, according to input from users in chat.  It will visually display it in the form of a graph.
+
 Instructions -
+    
+    This will be available as an official Twitch.tv extension, and as a standalone userscript for users who chose not to use Twitch extensions, or for users who wish to track a channel's score on a channel without the extension installed.
+
+    Instructions aren't written quite yet.
 
 Issues -
 
