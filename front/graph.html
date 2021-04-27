@@ -6,6 +6,7 @@
         height: 100vh;
         overflow: hidden;
     }
+
     #chart-container {
         /* background-color: rgb(160, 160, 160); */
         background-color: #1f1f23;
@@ -21,36 +22,26 @@
     <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4"></script>
     <script src="/socket.io/socket.io.js"></script>
-    
+
     <div id="chart-container">
         <canvas id="chart"></canvas>
     </div>
 
     <script>
         const socket = io();
-        
 
         window.Twitch.ext.onAuthorized((auth) => {
-            //token = auth.token;
-            //tuid = auth.userId;
-            /*
-            const verReq = new XMLHttpRequest();
-            verReq.open('GET', `/verify?auth=${token}&id=${tuid}`, true);
-            verReq.send();
-            */
-
             socket.emit("channel info", {
                 token: auth.token,
                 tuid: auth.userId
             });
-
         });
-    
+
         window.Twitch.ext.onError((error) => {
             console.error(err);
         });
 
-        socket.on("chart update"/*<<< make that channel id*/, function(data) {
+        socket.on("chart update"/*<<< make that channel id*/, function (data) {
             chartUpdate(MyChart, data);
         });
 
@@ -59,7 +50,6 @@
             chart.data.datasets[0].data.push(scoreData);
             chart.update();
         }
-
         const chartOptions = {
             color: "#E9E9E9",
             //events: [],        //disables hover-over tooltips when active
@@ -95,9 +85,7 @@
                 }]
             }
         }
-
         const ctx = document.getElementById('chart').getContext('2d');
-
         const MyChart = new Chart(ctx, {
             type: "line",
             data: {
