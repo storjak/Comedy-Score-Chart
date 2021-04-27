@@ -1,6 +1,6 @@
 Twitch Comedy Chart Extension
 
-Obviously, this part isn't done yet ;v
+Obviously, this project isn't done yet ;v
 
 Author - storjak@gmail.com
 
@@ -20,4 +20,4 @@ Issues -
 
     Also does not yet detect channel live status, which will affect if the chart activates at all.  However, seeing as extensions normally aren't visible on an offline channel, this may not be an issue.
 
-        - 20210427
+Last updated 20210427
