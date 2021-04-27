@@ -12,16 +12,15 @@ Instructions -
     
 This will be available as an official Twitch.tv extension, and as a standalone userscript for users who chose not to use Twitch extensions, or for users who wish to track a channel's score on a channel without the extension installed.
 
-The file referenced as "sensitive.js" contains 3 key items: your extensions's client ID, the client secret, and the Twitch OAuth token secret.  I've formatted mine as is below:
+The file referenced as "sensitive.js" contains two key items: your extensions's client ID and the Twitch OAuth token secret.  I've formatted mine as is below:
 ```javascript
 const secrets = {
     clientID: "Your extension's client ID",
-    clientSecret: Buffer.from("Your extensions's client secret", 'base64'),
     apiSecret: "Your extension's secret used for OAuth tokens"
 };
 module.exports = secrets;
 ```
-You will need to create your own file and fill it with your own Twitch extension secrets.
+You will need to create your own file and fill it with your own Twitch extension secrets.  This is mainly used to retrieve an OAuth for your backend so you can grab channel names from a channel ID.
 
 Full instructions aren't written quite yet.
 
