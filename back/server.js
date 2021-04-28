@@ -5,9 +5,21 @@ const tChat = require('./TMI_api.js');
 const core = require('./core_api.js');
 const sensitive = require('./sensitive.js');
 
+
+
+// -------------------------------------------------------------------------------------
+// GLOBAL VARIABLES
+
 let authKey;
 let authKeyExpiration;
 let channelName;
+let channelList = new Map(); // <<< key pairs for temporary ID storage to reduce API calls, e.g. {channelId: channelName}
+let userCount = 0;
+let broadcastTimer;
+let dcTimer;
+const dcTimerSetting = 20; // <<< SET IN SECONDS, NOT ms
+// -------------------------------------------------------------------------------------
+// STARTER FUNCTION
 
 (async function () {
     try {
@@ -19,7 +31,6 @@ let channelName;
         console.error(e);
     }
 })();
-
 // -------------------------------------------------------------------------------------
 // ENDPOINTS
 
@@ -45,24 +56,21 @@ app.get("/config", (req, res) => {
     res.sendFile(rootString + '\\front\\config.html');
 
 });
-
-// -------------------------------------------------------------------------------------
-// GLOBAL VARIABLES
-let channelList = {}; // <<< Object of key pairs for temporary ID storage to reduce API calls, e.g. {channelId: channelName}
-let userCount = 0;
-let broadcastTimer;
-let dcTimer;
-const dcTimerSetting = 20; // <<< SET IN SECONDS, NOT ms
 // -------------------------------------------------------------------------------------
 // SOCKET.IO CONNECTION
-
 
 function ioPath() {
     io.on("connection", (socket) => {
         userCount++;
         console.log(`User connected, usercount: ${userCount}`);
 
+
+
+
+
+
         if (userCount === 1) {
+            // --------------------------  ALL THIS can go into a room?
             if (dcTimer && dcTimer._destroyed === false) {
                 clearTimeout(dcTimer);
                 console.log("Disconnect timer cancelled.");
@@ -73,6 +81,7 @@ function ioPath() {
                     socket.broadcast.volatile.emit("chart update", tChat.total);
                 }, 2000);
             }
+            // -------------------------------------
         }
 
         socket.on("disconnect", () => {
@@ -90,15 +99,18 @@ function ioPath() {
         });
 
         socket.on("channel info", async (channelId) => {
-            if (!channelList[channelId]) {
+            let query = channelList.get(channelId);
+
+            if (!query) {
                 channelName = await core.nameGetter(channelId, sensitive.clientID, authKey);
                 console.log(channelList);
-                channelList[channelId] = channelName;
+                channelList.set(channelId, channelName);
+
                 console.log(channelList);
-            } else if (channelList.channelId) {
-                channelName = channelList[channelId];
+            } else if (query) {
+                channelName = query;
             }
-            console.log(channelName);
+            console.log(channelList.get(channelId));
         });
     });
 }
