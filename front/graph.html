@@ -30,18 +30,17 @@
     <script>
         const socket = io();
 
-        let channelId;
         window.Twitch.ext.onAuthorized((auth) => {
-            channelId = auth.channelId
-            socket.emit("channel info", channelId);
+            socket.emit("channel info", auth.channelId);
         });
 
         window.Twitch.ext.onError((error) => {
             console.error(err);
         });
 
-        socket.on("chart update"/*<<< need to make that channel id*/, function (data) {
+        socket.on("chart update", function (data) {
             chartUpdate(MyChart, data);
+            console.log(data);
         });
 
         const chartUpdate = function (chart, scoreData) {
@@ -49,6 +48,7 @@
             chart.data.datasets[0].data.push(scoreData);
             chart.update();
         }
+
         const chartOptions = {
             color: "#E9E9E9",
             //events: [],        //disables hover-over tooltips when active
@@ -73,7 +73,6 @@
                     },
                     ticks: {
                         fontColor: "#f1f1f1"
-
                     }
                 }],
                 yAxes: [{
