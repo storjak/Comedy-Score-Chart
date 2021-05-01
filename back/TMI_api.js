@@ -48,7 +48,6 @@ const tmiExports = {
                 this.client.on("message", (channel, tags, message, self) => {
                     if (channel === '#' + channelName) {
                         this.messageParser(message, channelName);
-                        //this.channelDataList[channelName].rawChat.push(this.messageParser(message));
                     }
                 });
             }).catch(e => {
