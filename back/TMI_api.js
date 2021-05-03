@@ -8,22 +8,26 @@ const tmiExports = {
     },
     channelDataList: {},
     client: undefined,
-    connect: function () {
+    connect: async function () {
         const clientOptions = {
-            connection: { reconnect: true },
+            options: {
+                debug: false
+            },
+            connection: {
+                reconnect: true
+            },
             joinInterval: 300,
             skipMembership: true,
             skipUpdatingEmotesets: true,
             updateEmotesetsTimer: 0,
         };
         this.client = new tmi.Client(clientOptions);
-        return this.client.connect()
+        return await this.client.connect()
             .then((data) => {
-                //console.log(data);
                 console.log(`Connected to Twitch IRC server: ${data[0]} on ${data[1]}.`);
             })
             .catch((err) => {
-                console.error(err);
+                console.error(`client.connect: ${err}`);
             });
     },
     disconnect: function () {
@@ -32,7 +36,7 @@ const tmiExports = {
                 console.log(`Disconnected from Twitch IRC server.`);
                 this.channelDataList = {};
             }).catch((err) => {
-                if (err) console.error(err);
+                console.error(`client.disconnect: ${err}`);
             });
     },
     join: function (channelName) {
@@ -50,8 +54,8 @@ const tmiExports = {
                         this.messageParser(message, channelName);
                     }
                 });
-            }).catch(e => {
-                console.error(e);
+            }).catch(err => {
+                console.error(`client.join: ${err}`);
             });
     },
     leave: function (channelName) {
@@ -60,8 +64,8 @@ const tmiExports = {
                 console.log(`Server leaving Twitch chat channel: ${channelName}`);
                 clearInterval(this.channelDataList[channelName].parserTimer);
                 delete this.channelDataList[channelName];
-            }).catch(e => {
-                console.error(e);
+            }).catch(err => {
+                console.error(`client.leave: ${err}`);
             });
     },
     messageParser: function (msg, channelName) {

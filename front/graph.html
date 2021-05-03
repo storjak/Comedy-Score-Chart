@@ -36,11 +36,20 @@
 
         window.Twitch.ext.onError((error) => {
             console.error(err);
+            console.log("Twitch hasn't authorized, auto-reload in 2 seconds...");
+            setTimeout(function () {
+                location.reload();
+            });
         });
 
         socket.on("chart update", function (data) {
             chartUpdate(MyChart, data);
             console.log(data);
+        });
+
+        socket.on('TMI Failure', function () {
+            socket.disconnect();
+            window.location = './error';
         });
 
         const chartUpdate = function (chart, scoreData) {

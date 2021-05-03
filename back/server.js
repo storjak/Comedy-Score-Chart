@@ -54,6 +54,10 @@ app.get("/graph", (req, res) => {
 app.get("/config", (req, res) => {
     res.sendFile(rootString + '\\front\\config.html');
 });
+
+app.get("/error", (req, res) => {
+    res.sendFile(rootString + '\\front\\error.html');
+});
 // -------------------------------------------------------------------------------------
 // SOCKET.IO CONNECTION
 
@@ -77,7 +81,8 @@ function ioPath() {
         userCount++;
         console.log(`User connected, usercount: ${userCount}`);
 
-        socket.on('channel info', async (data) => {            
+        socket.on('channel info', async (data) => {
+
             let query = channelList.get(data);
             if (query) {
                 channelName = query;
@@ -90,7 +95,12 @@ function ioPath() {
 
             if (chatConStatus === false || chatConStatus === undefined) {
                 await tChat.connect();
-                chatConStatus = true;
+                if (tChat.client.readyState() === 'OPEN') {// Returns one of the following states: "CONNECTING", "OPEN", "CLOSING" or "CLOSED"
+                    chatConStatus = true;
+                } else {
+                    socket.emit('TMI Failure');
+                    return;
+                }
             }
 
             if (userCount === 1 && dcTimer && dcTimer._destroyed === false) {
@@ -131,36 +141,42 @@ function ioPath() {
         });
 
         socket.on('disconnect', () => {
-            userCount--;
-            console.log(`User disconnected, usercount: ${userCount}`);
-            
-            lobbies[channelName].userCount--;
-            console.log(`User disconnected, lobbies[ch].userCount: ${lobbies[channelName].userCount}`);
 
-            tChat.channelDataList[channelName].viewCount--;
-            console.log(`User disconnected, channelDataList[ch].viewCount--: ${tChat.channelDataList[channelName].viewCount}`);
+            if (chatConStatus === false || chatConStatus === undefined) {
+                userCount--;
+                console.log(`User disconnected while TMI is down, usercount: ${userCount}`);
+            } else {
 
-            if (lobbies[channelName].userCount <= 0) {
-                lobbyLeaveTimer = setTimeout(() => {
-                    console.log(`lobbies: ${channelName} deleted.`);
-                    clearInterval(lobbies[channelName].updateTimer);
-                    delete lobbies[channelName];
-                }, 5000);
-            }
+                userCount--;
+                console.log(`User disconnected, usercount: ${userCount}`);
+                
+                lobbies[channelName].userCount--;
+                console.log(`User disconnected, lobbies${channelName}.userCount: ${lobbies[channelName].userCount}`);
 
-            if (tChat.channelDataList[channelName].viewCount <= 0) {
-                tLeaveTimer = setTimeout(() => {
-                    //console.log(`Twitch chat channel: ${channelName} left.`);
-                    tChat.leave(channelName);
-                }, 5000);
-            }
+                tChat.channelDataList[channelName].viewCount--;
+                console.log(`User disconnected, channelDataList.${channelName}.viewCount--: ${tChat.channelDataList[channelName].viewCount}`);
 
-            if (userCount <= 0) {
-                dcTimer = setTimeout(async () => {
-                    //console.log('Disconnecting from Twitch chat...');
-                    await tChat.disconnect();
-                    chatConStatus = false;
-                }, 6000);
+                if (lobbies[channelName].userCount <= 0) {
+                    lobbyLeaveTimer = setTimeout(() => {
+                        console.log(`lobbies: ${channelName} deleted.`);
+                        clearInterval(lobbies[channelName].updateTimer);
+                        delete lobbies[channelName];
+                    }, 5000);
+                }
+
+                if (tChat.channelDataList[channelName].viewCount <= 0) {
+                    tLeaveTimer = setTimeout(() => {
+                        //console.log(`Twitch chat channel: ${channelName} left.`);
+                        tChat.leave(channelName);
+                    }, 5000);
+                }
+
+                if (userCount <= 0) {
+                    dcTimer = setTimeout(async () => {
+                        await tChat.disconnect();
+                        chatConStatus = false;
+                    }, 6000);
+                }
             }
         });
     });
