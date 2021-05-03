@@ -78,16 +78,16 @@ function ioPath() {
     io.on("connection", (socket) => {
         let channelName;
 
-        userCount++;
-        console.log(`User connected, usercount: ${userCount}`);
-
         socket.on('channel info', async (data) => {
+            userCount++;
+            console.log(`User connected, usercount: ${userCount}`);
 
             let query = channelList.get(data);
             if (query) {
                 channelName = query;
             } else {
-                channelName = await core.nameGetter(data, sensitive.clientID, authKey);                
+                channelName = await core.nameGetter(data, sensitive.clientID, authKey);
+                console.log(channelName);
                 channelList.set(data, channelName);
             }
 
@@ -151,7 +151,7 @@ function ioPath() {
                 console.log(`User disconnected, usercount: ${userCount}`);
                 
                 lobbies[channelName].userCount--;
-                console.log(`User disconnected, lobbies${channelName}.userCount: ${lobbies[channelName].userCount}`);
+                console.log(`User disconnected, lobbies.${channelName}.userCount: ${lobbies[channelName].userCount}`);
 
                 tChat.channelDataList[channelName].viewCount--;
                 console.log(`User disconnected, channelDataList.${channelName}.viewCount--: ${tChat.channelDataList[channelName].viewCount}`);

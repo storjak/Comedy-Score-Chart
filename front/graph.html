@@ -28,9 +28,12 @@
     </div>
 
     <script>
-        const socket = io();
+        const socket = io({
+            autoConnect: false
+        });
 
-        window.Twitch.ext.onAuthorized((auth) => {
+        window.Twitch.ext.onAuthorized(async (auth) => {
+            socket.open();
             socket.emit("channel info", auth.channelId);
         });
 
