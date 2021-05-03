@@ -70,8 +70,10 @@ const tmiExports = {
         nums.forEach(num => {
             if (msg === `+${num}` || msg.includes(`+${num} `) || msg.includes(` +${num}`) || msg.includes(` +${num} `)) {
                 this.channelDataList[channelName].rawChat.push(num);
+                console.log(msg);
             } else if (msg === `-${num}` || msg.includes(`-${num} `) || msg.includes(` -${num}`) || msg.includes(` -${num} `)) {
                 this.channelDataList[channelName].rawChat.push(num* -1);
+                console.log(msg);
             }
         });
     }
