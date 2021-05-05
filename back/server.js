@@ -8,35 +8,54 @@ const sensitive = require('./sensitive.js');
 // -------------------------------------------------------------------------------------
 // GLOBAL VARIABLES
 
-let authKey;
-let authKeyExpiration;
+let keyObj = {};
+let lobbies = {};
 let chatConStatus;
-let channelList = new Map(); // <<< key pairs for temporary ID storage to reduce API calls, e.g. {channelId: channelName}
+let channelList = new Map();
 let userCount = 0;
 let lobbyLeaveTimer;
 let tLeaveTimer;
 let dcTimer;
+let authStatus;
 
 // -------------------------------------------------------------------------------------
-// STARTER FUNCTION
+// STARTER FUNCTIONS
+
+function authMaintainer(cID, sec) {
+    console.log(`Auth maintainer tripped, refreshing in ${((keyObj.expiration - 1000000)/60000).toFixed(1)} minutes.`);
+    return new Promise((resolve) => {
+        setTimeout(async() => {
+            let maintKey = await core.authConnector(false, sensitive.clientID, sensitive.apiSecret);
+            keyObj = {
+                auth: maintKey.data.access_token,
+                expiration: maintKey.data.expires_in
+            };
+            authMaintainer(cID, sec);
+            resolve(maintKey);
+        }, (keyObj.expiration - 1000000));
+    });
+}
 
 (async function () {
     try {
-        let key = await core.authGetter(sensitive.clientID, sensitive.apiSecret);
-        authKey = key.data.access_token;
-        authKeyExpiration = key.data.expires_in;
+        let key = await core.authConnector(false, sensitive.clientID, sensitive.apiSecret);
+        keyObj = {
+            auth: key.data.access_token,
+            expiration: key.data.expires_in
+        };
         ioPath();
+        authMaintainer(sensitive.clientID, sensitive.apiSecret);
     } catch (e) {
-        console.error(e);
+        console.error(`starter function error: ${e}`);
+        return e;
     }
 })();
+
 // -------------------------------------------------------------------------------------
 // ENDPOINTS
 
 const port = 3000;
-
 let rootString = __dirname;
-
 rootString = __dirname.substr(0, rootString.length - 5);
 
 http.listen(port, () => {
@@ -71,24 +90,23 @@ function Lobby(channelName) {
     }
 }
 
-let lobbies = {};
-
 function ioPath() {
+    console.log('Socket.IO listening');
 
     io.on("connection", (socket) => {
         let channelName;
 
-        socket.on('channel info', async (data) => {
+        socket.on('channel info', async (id) => {
             userCount++;
             console.log(`User connected, usercount: ${userCount}`);
 
-            let query = channelList.get(data);
+            let query = channelList.get(id);
             if (query) {
                 channelName = query;
             } else {
-                channelName = await core.nameGetter(data, sensitive.clientID, authKey);
-                console.log(channelName);
-                channelList.set(data, channelName);
+                channelName = await core.nameConnector(false, id, sensitive.clientID, keyObj.auth);
+                channelName = channelName.data.data[0].broadcaster_login;
+                channelList.set(id, channelName);
             }
 
             socket.join(channelName);
@@ -166,7 +184,6 @@ function ioPath() {
 
                 if (tChat.channelDataList[channelName].viewCount <= 0) {
                     tLeaveTimer = setTimeout(() => {
-                        //console.log(`Twitch chat channel: ${channelName} left.`);
                         tChat.leave(channelName);
                     }, 5000);
                 }

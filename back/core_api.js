@@ -1,36 +1,59 @@
 const axios = require('axios').default;
 
 const coreExports = {
-    nameGetter: async function (chId, clId, key) { // channelName = await nameGetter(channelId, sensitive.clientID, authKey);
-        const aConfig = {
+    nameGetter: async function (chId, clId, key) {
+        const nameConfig = {
             url: 'https://api.twitch.tv/helix/channels?broadcaster_id=' + chId,
-            timeout: 5000,
             headers: {
                 'Client-ID': clId,
                 'Authorization': 'Bearer ' + key
             }
         };
-
         try {
-            const res = await axios(aConfig);
-            if (res.status === 200) {
-                return res.data.data[0].broadcaster_login;
-            } else {
-                console.error('idGetter error: ' + res);
-                return false;
-            }
-
+            return await axios(nameConfig);
         } catch (e) {
-            console.error('idGetter error: ' + e);
-            return false
+            console.error('core.nameGetter error: ' + e);
+            return Promise.reject(e);
+        }
+    },
+    nameConnector: async function (stop, chId, clId, key) {
+        try {
+            return await this.nameGetter(chId, clId, key);
+        } catch (e) {
+            if (stop === false) {
+                setTimeout(() => {
+                    console.log('nameGetter connection failed, retrying...');
+                    this.nameConnector(stop, chId, clId, key);
+                }, 500);
+            } else {
+                console.error(`nameConnector stopped: ${e}`);
+            }
         }
     },
     authGetter: async function (c, s) {
-        const u = 'https://id.twitch.tv/oauth2/token?client_id=' + c + '&client_secret=' + s + '&grant_type=client_credentials';
+        const authConfig = {
+            url: 'https://id.twitch.tv/oauth2/token?client_id=' + c + '&client_secret=' + s + '&grant_type=client_credentials',
+            method: 'post'
+        };
         try {
-            return axios(u, { method: 'post' });
+            return await axios(authConfig);
         } catch (e) {
-            return console.error('authGetter error: ' + e);
+            console.error('core.authGetter error: ' + e);
+            return Promise.reject(e);
+        }
+    },
+    authConnector: async function (stop, cID, sec) {
+        try {
+            return await this.authGetter(cID, sec);
+        } catch (e) {
+            if (stop === false) {
+                setTimeout(() => {
+                    console.log('authGetter connection failed, retrying...');
+                    this.authConnector(stop, cID, sec);
+                }, 5000);
+            } else {
+                console.error(`authConnector stopped: ${e}`);
+            }
         }
     }
 }
