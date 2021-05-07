@@ -8,6 +8,8 @@ const sensitive = require('./sensitive.js');
 // -------------------------------------------------------------------------------------
 // GLOBAL VARIABLES
 
+// https://dev.twitch.tv/docs/api/reference#get-streams << just a temporary bookmark
+
 let keyObj = {};
 let lobbies = {};
 let chatConStatus;
@@ -16,8 +18,7 @@ let userCount = 0;
 let lobbyLeaveTimer;
 let tLeaveTimer;
 let dcTimer;
-let authStatus;
-
+let usChannelName;
 // -------------------------------------------------------------------------------------
 // STARTER FUNCTIONS
 
@@ -62,12 +63,18 @@ http.listen(port, () => {
     console.log(`Listening on port ${port}`);
 });
 
+
 app.get("/", (req, res) => {
     res.sendFile(rootString + '\\front\\index.html');
 });
 
 app.get("/graph", (req, res) => {
     res.sendFile(rootString + '\\front\\graph.html');
+});
+    
+app.get("/userscript/:usname", (req, res) => {
+    usChannelName = req.params.usname;
+    res.sendFile(rootString + '\\front\\userscript_graph.html');
 });
 
 app.get("/config", (req, res) => {
@@ -100,20 +107,24 @@ function ioPath() {
             userCount++;
             console.log(`User connected, usercount: ${userCount}`);
 
-            let query = channelList.get(id);
-            if (query) {
-                channelName = query;
+            if (id === '.') {
+                channelName = usChannelName;
             } else {
-                channelName = await core.nameConnector(false, id, sensitive.clientID, keyObj.auth);
-                channelName = channelName.data.data[0].broadcaster_login;
-                channelList.set(id, channelName);
+                let query = channelList.get(id);
+                if (query) {
+                    channelName = query;
+                } else {
+                    channelName = await core.nameConnector(false, id, sensitive.clientID, keyObj.auth);
+                    channelName = channelName.data.data[0].broadcaster_login;
+                    channelList.set(id, channelName);
+                }
             }
 
             socket.join(channelName);
 
             if (chatConStatus === false || chatConStatus === undefined) {
                 await tChat.connect();
-                if (tChat.client.readyState() === 'OPEN') {// Returns one of the following states: "CONNECTING", "OPEN", "CLOSING" or "CLOSED"
+                if (tChat.client.readyState() === 'OPEN') { // Returns one of the following states: "CONNECTING", "OPEN", "CLOSING" or "CLOSED"
                     chatConStatus = true;
                 } else {
                     socket.emit('TMI Failure');
