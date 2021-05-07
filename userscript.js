@@ -15,6 +15,8 @@
 
 // ==/UserScript==
 
+// Works with Twitch.tv as of May 7, 2021
+
 function appendButton() {
     let chartStatus = false;
     let removedElement;
