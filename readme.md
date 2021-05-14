@@ -1,10 +1,10 @@
-# Twitch Comedy Chart Extension
+# Twitch.tv Comedy Score Chart Extension
 
 Obviously, this project isn't done yet ;v
 
 Author - storjak@gmail.com
 
-## Features -
+## Features
 
 This loads on a Twitch.tv's streamer page during a live stream and will collect and compile a live "comedy" score, according to input from users in chat.  It will visually display it in the form of a graph.
 
