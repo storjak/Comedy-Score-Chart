@@ -1,16 +1,18 @@
-Twitch Comedy Chart Extension
+# Twitch Comedy Chart Extension
 
 Obviously, this project isn't done yet ;v
 
 Author - storjak@gmail.com
 
-Features -
+## Features -
 
 This loads on a Twitch.tv's streamer page during a live stream and will collect and compile a live "comedy" score, according to input from users in chat.  It will visually display it in the form of a graph.
 
-Instructions -
-    
-This will be available as an official Twitch.tv extension, and as a standalone userscript for users who chose not to use Twitch extensions, or for users who wish to track a channel's score on a channel without the extension installed.
+This will be available as an official Twitch.tv extension, and as a standalone userscript for users who choose not to use Twitch extensions, or for users who wish to track a channel's score on a channel without the extension installed.
+
+## Instructions
+
+This is being used in a Node.js environment with npm.  If you haven't already, you need to install Node.js and npm, and their dependencies.  After the code is unzipped where you want it to be, you should be able to simply use `npm install` in a bash terminal in the root directory of this project.  From there you can run the server.js file with Node.js.
 
 The file referenced as "sensitive.js" contains two key items: your extensions's client ID and the Twitch OAuth token secret.  I've formatted mine as is below:
 ```javascript
@@ -24,10 +26,8 @@ You will need to create your own file and fill it with your own Twitch extension
 
 Full instructions aren't written quite yet.
 
-Issues -
+## Issues
 
-Currently implementing channels and the ability to automatically add and remove rooms with socket.io.  Also needs a method to limit Twitch API requests, and will start a temporary local database with key pairs of channel id's to channel names to reduce total requests.
+For now, see the [issues page](https://github.com/storjak/Comedy-Score-Chart/issues).
 
-Also does not yet detect channel live status, which will affect if the chart activates at all.  However, seeing as extensions normally aren't visible on an offline channel, this may not be an issue.
-
-Last updated 20210427
+Readme last updated 20210513
