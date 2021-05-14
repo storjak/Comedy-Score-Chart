@@ -26,6 +26,14 @@ You will need to create your own file and fill it with your own Twitch extension
 
 Full instructions aren't written quite yet.
 
+## Screenshots
+
+### Extension version
+![Imgur](https://i.imgur.com/nbFIpVj.png)
+
+### User script version (draggable and resizable)
+![Imgur](https://imgur.com/Qz5wJUG.png)
+
 ## Issues
 
 For now, see the [issues page](https://github.com/storjak/Comedy-Score-Chart/issues).
