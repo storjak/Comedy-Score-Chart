@@ -1,6 +1,4 @@
-# Twitch.tv Comedy Score Chart Extension
-
-Obviously, this project isn't done yet ;v
+# Twitch.tv Chat Score Chart Extension
 
 Author - storjak@gmail.com
 
