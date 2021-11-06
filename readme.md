@@ -51,6 +51,17 @@ Upon a client disconnecting, the server decides if it needs to disconnect from T
 
 ## Issues
 
-For now, see the [issues page](https://github.com/storjak/Comedy-Score-Chart/issues).
+There are a few things on the to-do list still, to prep for its 1.0 release.
 
-Readme last updated 20210610
+* I can clean up server.js by rewriting authMaintainer and moving it into the core_api.js file.  It would be rewritten as a constructor and would be able to self renew.  This is entirely unnecessary, but would clean up the app.  It's low on the priority list.
+* I want to add a donation link to the offline and about front-end pages.  I still do not intend to profit off this project, but I would like funds to offset server costs.
+* I want to change messageParser to use Regex instead of multiple .include() functions.  This should hopefully speed up performance a bit and improve parsing accuracy.
+* Index.html is no longer necessary.  I'll either turn it into a portfolio page for this project or remove it altogether.
+* All the front end files, except possibly userscript_graph.html, need to be moved to Twitch.  Twitch will host the front end files for extensions.  I'll host the US graph page if it doesn't break Twitch TOS.
+* Finally, once everything is being hosted remotely, I want to start more expanisve testing between Firefox and Edge with this app.
+
+Ideally I should achieve all of this within the coming few weeks.
+
+For other info, see the [issues page](https://github.com/storjak/Comedy-Score-Chart/issues).
+
+Readme last updated 20211105
