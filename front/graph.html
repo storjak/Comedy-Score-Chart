@@ -47,7 +47,6 @@
 
         socket.on("chart update", function (data) {
             chartUpdate(MyChart, data);
-            console.log(data);
         });
 
         socket.on('TMI Failure', function () {
@@ -55,7 +54,12 @@
             window.location = './error';
         });
 
-        const chartUpdate = function (chart, scoreData) {
+        socket.on('offline', function () {
+            socket.disconnect();
+            window.location = './offline';
+        });
+
+        function chartUpdate (chart, scoreData) {
             chart.data.datasets[0].data.shift();
             chart.data.datasets[0].data.push(scoreData);
             chart.update();
@@ -63,7 +67,7 @@
 
         const chartOptions = {
             color: "#E9E9E9",
-            //events: [],        //disables hover-over tooltips when active
+            //events: [], //disables hover-over tooltips when active
             maintainAspectRatio: false,
             tooltips: {
                 enabled: true

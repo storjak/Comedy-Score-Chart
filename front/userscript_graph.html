@@ -35,7 +35,6 @@
 
         socket.on("chart update", function (data) {
             chartUpdate(MyChart, data);
-            console.log(data);
         });
 
         socket.on('TMI Failure', function () {

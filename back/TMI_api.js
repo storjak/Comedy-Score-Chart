@@ -69,14 +69,12 @@ const tmiExports = {
             });
     },
     messageParser: function (msg, channelName) {
-        const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];      // <<<< WHAT IF +2 and -4 in the same message?  Fix duplicate bug or do not count
+        const nums = [1, 2, 3, 4, 5, 6, 7, 8, 9];
         nums.forEach(num => {
             if (msg === `+${num}` || msg.includes(`+${num} `) || msg.includes(` +${num}`) || msg.includes(` +${num} `)) {
                 this.channelDataList[channelName].rawChat.push(num);
-                console.log(msg);
             } else if (msg === `-${num}` || msg.includes(`-${num} `) || msg.includes(` -${num}`) || msg.includes(` -${num} `)) {
                 this.channelDataList[channelName].rawChat.push(num* -1);
-                console.log(msg);
             }
         });
     }

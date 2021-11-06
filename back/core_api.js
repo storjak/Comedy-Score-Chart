@@ -22,7 +22,7 @@ const coreExports = {
         } catch (e) {
             if (stop === false) {
                 setTimeout(() => {
-                    console.log('nameGetter connection failed, retrying...');
+                    console.error('nameGetter connection failed, retrying...');
                     this.nameConnector(stop, chId, clId, key);
                 }, 500);
             } else {
@@ -48,7 +48,7 @@ const coreExports = {
         } catch (e) {
             if (stop === false) {
                 setTimeout(() => {
-                    console.log('authGetter connection failed, retrying...');
+                    console.error('authGetter connection failed, retrying...');
                     this.authConnector(stop, cID, sec);
                 }, 5000);
             } else {

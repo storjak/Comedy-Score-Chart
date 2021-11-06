@@ -1,40 +1,38 @@
-const app = require('express')();
-const http = require('http').createServer(app);
-const io = require('socket.io')(http);
-const tChat = require('./TMI_api.js');
-const core = require('./core_api.js');
-const sensitive = require('./sensitive.js');
+"use strict";
+const app = require('express')(),
+http = require('http').createServer(app),
+io = require('socket.io')(http),
+tChat = require('./TMI_api.js'),
+core = require('./core_api.js'),
+sensitive = require('./sensitive.js');
 
 // -------------------------------------------------------------------------------------
 // GLOBAL VARIABLES
 
-// https://dev.twitch.tv/docs/api/reference#get-streams << just a temporary bookmark
+let chatConStatus,
+lobbyLeaveTimer,
+tLeaveTimer,
+dcTimer,
+usChannelName,
+keyObj = {},
+lobbies = {},
+channelList = new Map(),
+userCount = 0;
 
-let keyObj = {};
-let lobbies = {};
-let chatConStatus;
-let channelList = new Map();
-let userCount = 0;
-let lobbyLeaveTimer;
-let tLeaveTimer;
-let dcTimer;
-let usChannelName;
 // -------------------------------------------------------------------------------------
 // STARTER FUNCTIONS
 
 function authMaintainer(cID, sec) {
-    console.log(`Auth maintainer tripped, refreshing in ${((keyObj.expiration - 1000000)/60000).toFixed(1)} minutes.`);
-    return new Promise((resolve) => {
-        setTimeout(async() => {
-            let maintKey = await core.authConnector(false, sensitive.clientID, sensitive.apiSecret);
-            keyObj = {
-                auth: maintKey.data.access_token,
-                expiration: maintKey.data.expires_in
-            };
-            authMaintainer(cID, sec);
-            resolve(maintKey);
-        }, (keyObj.expiration - 1000000));
-    });
+    let timeout = keyObj.expiration - 1000000;
+    console.log(`Auth maintainer expired, refreshing in ${(timeout/60000).toFixed(1)} minutes.`);
+    setTimeout(async() => {
+        let maintKey = await core.authConnector(false, cID, sec);
+        keyObj = {
+            auth: maintKey.data.access_token,
+            expiration: maintKey.data.expires_in
+        };
+        authMaintainer(cID, sec);
+    }, (timeout));
 }
 
 (async function () {
@@ -56,13 +54,11 @@ function authMaintainer(cID, sec) {
 // ENDPOINTS
 
 const port = 3000;
-let rootString = __dirname;
-rootString = __dirname.substr(0, rootString.length - 5);
+const rootString = __dirname.substr(0,  __dirname.length - 5);
 
 http.listen(port, () => {
     console.log(`Listening on port ${port}`);
 });
-
 
 app.get("/", (req, res) => {
     res.sendFile(rootString + '\\front\\index.html');
@@ -71,7 +67,7 @@ app.get("/", (req, res) => {
 app.get("/graph", (req, res) => {
     res.sendFile(rootString + '\\front\\graph.html');
 });
-    
+
 app.get("/userscript/:usname", (req, res) => {
     usChannelName = req.params.usname;
     res.sendFile(rootString + '\\front\\userscript_graph.html');
@@ -84,6 +80,12 @@ app.get("/config", (req, res) => {
 app.get("/error", (req, res) => {
     res.sendFile(rootString + '\\front\\error.html');
 });
+
+app.get("/offline", (req, res) => {
+    res.sendFile(rootString + '\\front\\offline.html');
+});
+
+// All the HTML pages above will be hosted by Twitch eventually
 // -------------------------------------------------------------------------------------
 // SOCKET.IO CONNECTION
 
@@ -99,7 +101,6 @@ function Lobby(channelName) {
 
 function ioPath() {
     console.log('Socket.IO listening');
-
     io.on("connection", (socket) => {
         let channelName;
 
@@ -124,7 +125,7 @@ function ioPath() {
 
             if (chatConStatus === false || chatConStatus === undefined) {
                 await tChat.connect();
-                if (tChat.client.readyState() === 'OPEN') { // Returns one of the following states: "CONNECTING", "OPEN", "CLOSING" or "CLOSED"
+                if (tChat.client.readyState() === 'OPEN') {
                     chatConStatus = true;
                 } else {
                     socket.emit('TMI Failure');
@@ -144,7 +145,7 @@ function ioPath() {
             }
 
             tChat.channelDataList[channelName].viewCount++;
-            console.log(`User connected, tChat.channelDataList.${channelName}.usercount ${tChat.channelDataList[channelName].viewCount}`);
+            //console.log(`User connected, tChat.channelDataList.${channelName}.usercount ${tChat.channelDataList[channelName].viewCount}`);
 
             if (tChat.channelDataList[channelName]){
                 if (tChat.channelDataList[channelName].viewCount === 1 && tLeaveTimer && tLeaveTimer._destroyed === false) {
@@ -156,10 +157,10 @@ function ioPath() {
             if (!lobbies[channelName]) {
                 lobbies[channelName] = new Lobby(channelName);
                 lobbies[channelName].emitter(socket);
-            } 
+            }
 
             lobbies[channelName].userCount++;
-            console.log(`User connected, lobbies.${channelName}.usercount: ${lobbies[channelName].userCount}`);
+            //console.log(`User connected, lobbies.${channelName}.usercount: ${lobbies[channelName].userCount}`);
             
             if (lobbies[channelName]){
                 if (lobbies[channelName].userCount === 1 && lobbyLeaveTimer && lobbyLeaveTimer._destroyed === false) {
@@ -170,20 +171,18 @@ function ioPath() {
         });
 
         socket.on('disconnect', () => {
-
             if (chatConStatus === false || chatConStatus === undefined) {
                 userCount--;
                 console.log(`User disconnected while TMI is down, usercount: ${userCount}`);
             } else {
-
                 userCount--;
                 console.log(`User disconnected, usercount: ${userCount}`);
                 
                 lobbies[channelName].userCount--;
-                console.log(`User disconnected, lobbies.${channelName}.userCount: ${lobbies[channelName].userCount}`);
+                //console.log(`User disconnected, lobbies.${channelName}.userCount: ${lobbies[channelName].userCount}`);
 
                 tChat.channelDataList[channelName].viewCount--;
-                console.log(`User disconnected, channelDataList.${channelName}.viewCount--: ${tChat.channelDataList[channelName].viewCount}`);
+                //console.log(`User disconnected, channelDataList.${channelName}.viewCount--: ${tChat.channelDataList[channelName].viewCount}`);
 
                 if (lobbies[channelName].userCount <= 0) {
                     lobbyLeaveTimer = setTimeout(() => {
