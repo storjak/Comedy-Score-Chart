@@ -5,12 +5,12 @@
   "main": ".\\back\\server.js",
   "dependencies": {
     "axios": "^0.21.1",
+    "cors": "^2.8.5",
     "express": "^4.17.1",
     "http": "^0.0.1-security",
     "socket.io": "^4.1.1",
     "tmi.js": "^1.8.3"
   },
-  "devDependencies": {},
   "keywords": [
     "twitch",
     "extension",

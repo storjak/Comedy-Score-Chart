@@ -15,7 +15,10 @@
 
 // ==/UserScript==
 
+//12/12/2021
+
 "use strict";
+
 function appendButton() {
     let chartStatus = false,
         removedElement,
@@ -50,13 +53,16 @@ function appendButton() {
             if (removedElement === undefined) {
                 let src,
                     liveElement = document.getElementsByTagName('video');
-                if (liveElement[0].readyState === 0) {
-                    src = "http://localhost:3000/offline";
-                } else if (liveElement[0].src.substr(0, 27) === 'blob:https://www.twitch.tv/') {
-                    src = "http://localhost:3000/userscript/" + location.pathname.slice(1);
-                    observer.observe(liveElement[0], { attributes: true });
+                if (liveElement[0].readyState === 0) { // If stream is offline
+                    src = "https://localhost:3000/offline";
+                } else if (liveElement[0].src.substr(0, 27) === 'blob:https://www.twitch.tv/') { // If stream is online
+                    src = "https://localhost:3000/userscript/" + location.pathname.substr(1);
+                    observer.observe(liveElement[0], {
+                        attributes: true
+                    });
                 } else {
-                    src = "http://localhost:3000/offline";
+                    src = "https://localhost:3000/offline";
+                    console.error('Something changed with this script\'s \"video\" element detection.');
                 }
                 let newElement = document.createElement("div");
                 newElement.style.cssText = "position: absolute; z-index: 9999; top: 100px; right: 10px; border: solid 1px black; border-radius: 8px; resize: both; overflow: hidden; width: 300px; height: 300px; display: flex; flex-direction: column;";

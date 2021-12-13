@@ -20,18 +20,23 @@
 
 <body>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4"></script>
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://unpkg.com/socket.io-client@4.4.0/dist/socket.io.min.js"></script>
 
     <div id="chart-container">
         <canvas id="chart"></canvas>
     </div>
 
     <script>
-        const socket = io({
-            autoConnect: true
+        const socket = io('http://localhost:3001', {
+            withCredentials: true
         });
 
-        socket.emit("channel info", '.');
+        socket.on("connect_error", (e) => {
+            socket.disconnect();
+            console.error('Socket.io connection error: ' + e);
+        });
+
+        socket.emit("channel info", ('.' + window.location.pathname.substr(12)));
 
         socket.on("chart update", function (data) {
             chartUpdate(MyChart, data);

@@ -1,31 +1,39 @@
 "use strict";
+
 const app = require('express')(),
-http = require('http').createServer(app),
-io = require('socket.io')(http),
-tChat = require('./TMI_api.js'),
-core = require('./core_api.js'),
-sensitive = require('./sensitive.js');
+    cors = require('cors'),
+    http = require('http').createServer(app),
+    io = require('socket.io')(http, {
+        cors: {
+            origin: "https://localhost:3000",
+            methods: ["GET", "POST"],
+            credentials: true
+        }
+    }),
+    tChat = require('./TMI_api.js'),
+    core = require('./core_api.js'),
+    sensitive = require('./secrets/sensitive.js'),
+    port = 3001;
 
 // -------------------------------------------------------------------------------------
 // GLOBAL VARIABLES
 
 let chatConStatus,
-lobbyLeaveTimer,
-tLeaveTimer,
-dcTimer,
-usChannelName,
-keyObj = {},
-lobbies = {},
-channelList = new Map(),
-userCount = 0;
+    lobbyLeaveTimer,
+    tLeaveTimer,
+    dcTimer,
+    keyObj = {},
+    lobbies = {},
+    channelList = new Map(),
+    userCount = 0;
 
 // -------------------------------------------------------------------------------------
 // STARTER FUNCTIONS
 
 function authMaintainer(cID, sec) {
-    let timeout = keyObj.expiration - 1000000;
+    let timeout = keyObj.expiration - 300000;
     console.log(`Auth maintainer expired, refreshing in ${(timeout/60000).toFixed(1)} minutes.`);
-    setTimeout(async() => {
+    setTimeout(async () => {
         let maintKey = await core.authConnector(false, cID, sec);
         keyObj = {
             auth: maintKey.data.access_token,
@@ -51,38 +59,10 @@ function authMaintainer(cID, sec) {
 })();
 
 // -------------------------------------------------------------------------------------
-// ENDPOINTS
-
-const port = 3000;
-const rootString = __dirname.substr(0,  __dirname.length - 5);
+// ENDPOINT
 
 http.listen(port, () => {
-    console.log(`Listening on port ${port}`);
-});
-
-app.get("/", (req, res) => {
-    res.sendFile(rootString + '\\front\\index.html');
-});
-
-app.get("/graph", (req, res) => {
-    res.sendFile(rootString + '\\front\\graph.html');
-});
-
-app.get("/userscript/:usname", (req, res) => {
-    usChannelName = req.params.usname;
-    res.sendFile(rootString + '\\front\\userscript_graph.html');
-});
-
-app.get("/config", (req, res) => {
-    res.sendFile(rootString + '\\front\\config.html');
-});
-
-app.get("/error", (req, res) => {
-    res.sendFile(rootString + '\\front\\error.html');
-});
-
-app.get("/offline", (req, res) => {
-    res.sendFile(rootString + '\\front\\offline.html');
+    console.log(`Listening on HTTP for Socket.IO, port ${port}`);
 });
 
 // All the HTML pages above will be hosted by Twitch eventually
@@ -104,12 +84,13 @@ function ioPath() {
     io.on("connection", (socket) => {
         let channelName;
 
-        socket.on('channel info', async (id) => {
+        socket.on('channel info', async (id) => { // "36985393"
+            console.log(typeof id);
             userCount++;
             console.log(`User connected, usercount: ${userCount}`);
 
-            if (id === '.') {
-                channelName = usChannelName;
+            if (id[0] === '.') {
+                channelName = id.substr(1);
             } else {
                 let query = channelList.get(id);
                 if (query) {
@@ -147,7 +128,7 @@ function ioPath() {
             tChat.channelDataList[channelName].viewCount++;
             //console.log(`User connected, tChat.channelDataList.${channelName}.usercount ${tChat.channelDataList[channelName].viewCount}`);
 
-            if (tChat.channelDataList[channelName]){
+            if (tChat.channelDataList[channelName]) {
                 if (tChat.channelDataList[channelName].viewCount === 1 && tLeaveTimer && tLeaveTimer._destroyed === false) {
                     clearTimeout(tLeaveTimer);
                     console.log("tLeaveTimer timer cancelled.");
@@ -161,11 +142,11 @@ function ioPath() {
 
             lobbies[channelName].userCount++;
             //console.log(`User connected, lobbies.${channelName}.usercount: ${lobbies[channelName].userCount}`);
-            
-            if (lobbies[channelName]){
+
+            if (lobbies[channelName]) {
                 if (lobbies[channelName].userCount === 1 && lobbyLeaveTimer && lobbyLeaveTimer._destroyed === false) {
                     clearTimeout(lobbyLeaveTimer);
-                        console.log("lobbyLeaveTimer timer cancelled.");
+                    console.log("lobbyLeaveTimer timer cancelled.");
                 }
             }
         });
@@ -177,7 +158,7 @@ function ioPath() {
             } else {
                 userCount--;
                 console.log(`User disconnected, usercount: ${userCount}`);
-                
+
                 lobbies[channelName].userCount--;
                 //console.log(`User disconnected, lobbies.${channelName}.userCount: ${lobbies[channelName].userCount}`);
 

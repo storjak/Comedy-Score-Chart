@@ -1,8 +1,7 @@
 Comedy Score Chart.json
-back/sensitive.js
+back/secrets/*
+front/secrets/*
 node_modules
-test.json
-Twitch Developer Rig.exe - Shortcut.lnk
 .vscode
-Capture.PNG
-notes.txt
+Cut
+Scraps

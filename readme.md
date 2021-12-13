@@ -10,9 +10,7 @@ This will be available as an official Twitch.tv extension, and as a standalone u
 
 ## Instructions
 
-This is being used in a Node.js environment with npm.  If you haven't already, you need to install Node.js and npm, and their dependencies.  After the code is unzipped where you want it to be, you should be able to simply use `npm install` in a bash terminal in the root directory of this project.  From there you can run the server.js file with Node.js.
-
-The file referenced as "sensitive.js" contains two key items: your extensions's client ID and the Twitch OAuth token secret.  I've formatted mine as is below:
+This is being run in a Node.js 16.13.1 environment.  If you haven't already, you need to install Node.js this project's dependencies with npm, by simply running `npm i` in a terminal in this project's root directory.  Now you will need to populate the `secrets` folders in the `front` and `back` directories.  In the `front/secrets` directory there is a self signed cert file and a self signed key file for testing with HTTPS - you will need to generate your own files.  In the `back/secrets` directory, there is only `Sensitive.js`.  It contains two key items: your extensions's client ID and the Twitch OAuth token secret.  You will need to create your own file and fill it with your own Twitch extension secrets.  These are used to retrieve an OAuth for your backend so you can grab channel names from a channel ID.  I've formatted mine as below:
 ```javascript
 const secrets = {
     clientID: "Your extension's client ID",
@@ -20,9 +18,9 @@ const secrets = {
 };
 module.exports = secrets;
 ```
-You will need to create your own file and fill it with your own Twitch extension secrets.  This is mainly used to retrieve an OAuth for your backend so you can grab channel names from a channel ID.
+If everything is set up correctly, at this point you can run the server with two terminals - one navigated to `front` and the other to `back`.  In the `front` terminal, you can start the server with `node back-root`, and in the `back` terminal you can start the front end with `node front-root`.  With these both running you should have full functionality.
 
-Full instructions aren't written quite yet.
+Full instructions aren't written quite yet - this process is currently VERY subject to change, but it should be enough to get anyone started.
 
 ## Screenshots
 

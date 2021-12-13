@@ -8,7 +8,6 @@
     }
 
     #chart-container {
-        /* background-color: rgb(160, 160, 160); */
         background-color: #1f1f23;
         position: relative;
         height: 4000px;
@@ -21,28 +20,34 @@
 <body>
     <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@2.9.4"></script>
-    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://unpkg.com/socket.io-client@4.4.0/dist/socket.io.min.js"></script>
 
     <div id="chart-container">
         <canvas id="chart"></canvas>
     </div>
 
     <script>
-        const socket = io({
+        const socket = io('http://localhost:3001', {
+            withCredentials: true,
             autoConnect: false
         });
 
         window.Twitch.ext.onAuthorized((auth) => {
-            socket.open();
+            socket.connect();
             socket.emit("channel info", auth.channelId);
         });
 
         window.Twitch.ext.onError((error) => {
             console.error(err);
-            console.log("Twitch hasn't authorized, auto-reload in 2 seconds...");
+            console.error("window.Twitch.ext error, auto-reload in 2 seconds...");
             setTimeout(function () {
                 location.reload();
-            });
+            }, 2000);
+        });
+
+        socket.on("connect_error", (e) => {
+            socket.disconnect();
+            console.error('Socket.io connection error: ' + e);
         });
 
         socket.on("chart update", function (data) {
@@ -59,7 +64,7 @@
             window.location = './offline';
         });
 
-        function chartUpdate (chart, scoreData) {
+        function chartUpdate(chart, scoreData) {
             chart.data.datasets[0].data.shift();
             chart.data.datasets[0].data.push(scoreData);
             chart.update();

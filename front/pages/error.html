@@ -38,8 +38,19 @@
 <body>
     <div id='wrapper'>
         <p>Something went wrong with the extension, please reload it to reconnect.</p>
-        <a href="./graph"><button>Reload</button></a>
+        <button onclick=redir()>Reload</button>
     </div>
 </body>
+
+<script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
+<script>
+    function redir() {
+        if (window.location.pathname === '/graph') { // if pathname is the twitch extension
+            window.location = './graph';
+        } else if (window.location.pathname.substr(0, 11) === '/userscript') { // if pathname is the userscript
+            window.location = './userscript_graph';
+        }
+    }
+</script>
 
 </html>
