@@ -1,6 +1,6 @@
 # Twitch.tv Chat Score Chart Extension
 
-Author - storjak@gmail.com
+Author - storjakdev@gmail.com
 
 ## Features
 
@@ -18,7 +18,7 @@ const secrets = {
 };
 module.exports = secrets;
 ```
-If everything is set up correctly, at this point you can run the server with two terminals - one navigated to `front` and the other to `back`.  In the `front` terminal, you can start the server with `node back-root`, and in the `back` terminal you can start the front end with `node front-root`.  With these both running you should have full functionality.
+If everything is set up correctly, at this point you can run the server with two terminals - one navigated to `front` and the other to `back`.  In the `front` terminal, you can start the server with `node back-root-ws`, and in the `back` terminal you can start the front end with `node front-root`.  With these both running you should have full functionality.
 
 Full instructions aren't written quite yet - this process is currently VERY subject to change, but it should be enough to get anyone started.
 
@@ -47,19 +47,25 @@ After connecting to the IRC chat and joining the channel, the server will begin 
 
 Upon a client disconnecting, the server decides if it needs to disconnect from Twitch chat entirely, such as if the total server user count drops to zero.  Otherwise, the total user count is dropped by one, and the channel’s user count is dropped by one.  As stated earlier, if the channel’s user count drops to zero, it will completely remove the related cache.
 
+## In the works
+
+* Writing in Twitch PubSub capabilities to save effort and server costs.  Client websocket connections won't be removed, but will only be used for userscript users.  All other clients connected through Twitch officially will be using PubSub.
+* Every big update is requiring me to basically redo most of the format of this program, so if the readme
+
 ## Issues
 
 There are a few things on the to-do list still, to prep for its 1.0 release.
 
-* I can clean up server.js by rewriting authMaintainer and moving it into the core_api.js file.  It would be rewritten as a constructor and would be able to self renew.  This is entirely unnecessary, but would clean up the app.  It's low on the priority list.
 * I want to add a donation link to the offline and about front-end pages.  I still do not intend to profit off this project, but I would like funds to offset server costs.
 * I want to change messageParser to use Regex instead of multiple .include() functions.  This should hopefully speed up performance a bit and improve parsing accuracy.
-* Index.html is no longer necessary.  I'll either turn it into a portfolio page for this project or remove it altogether.
-* All the front end files, except possibly userscript_graph.html, need to be moved to Twitch.  Twitch will host the front end files for extensions.  I'll host the US graph page if it doesn't break Twitch TOS.
-* Finally, once everything is being hosted remotely, I want to start more expanisve testing between Firefox and Edge with this app.
+* Once everything is being hosted remotely, I want to start more expanisve testing between Firefox and Edge with this app.
+* I may need to add an API request handler.  Despite having a channel cache it can still be broken, i.e. if the server restarts and
+gets bombarded with different channel socket requests.
+* Some libraires like Chart.JS should be updated but it's not explicitly necessary.
+* I can clean up the authMaintainer function to be more autonomous, or possibly wrap it in another function.  Either way, the current implementation is ugly.
 
 Ideally I should achieve all of this within the coming few weeks.
 
 For other info, see the [issues page](https://github.com/storjak/Comedy-Score-Chart/issues).
 
-Readme last updated 20211105
+Readme last updated 20211223

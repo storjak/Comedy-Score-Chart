@@ -32,6 +32,9 @@
             autoConnect: false
         });
 
+        console.log('path...........');
+        console.log(window.location.pathname);
+
         window.Twitch.ext.onAuthorized((auth) => {
             socket.connect();
             socket.emit("channel info", auth.channelId);

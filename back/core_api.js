@@ -7,7 +7,8 @@ const coreExports = {
             headers: {
                 'Client-ID': clId,
                 'Authorization': 'Bearer ' + key
-            }
+            },
+            timeout: 5000
         };
         try {
             return await axios(nameConfig);
@@ -33,12 +34,13 @@ const coreExports = {
     authGetter: async function (c, s) {
         const authConfig = {
             url: 'https://id.twitch.tv/oauth2/token?client_id=' + c + '&client_secret=' + s + '&grant_type=client_credentials',
-            method: 'post'
+            method: 'post',
+            timeout: 5000
         };
         try {
             return await axios(authConfig);
         } catch (e) {
-            console.error('core.authGetter error: ' + e);
+            console.error('authGetter connection error: ' + e);
             return Promise.reject(e);
         }
     },
@@ -47,8 +49,8 @@ const coreExports = {
             return await this.authGetter(cID, sec);
         } catch (e) {
             if (stop === false) {
+                console.log('Retrying authGetter connection in 5 seconds...');
                 setTimeout(() => {
-                    console.error('authGetter connection failed, retrying...');
                     this.authConnector(stop, cID, sec);
                 }, 5000);
             } else {

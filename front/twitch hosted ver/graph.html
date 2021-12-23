@@ -1,0 +1,30 @@
+<!DOCTYPE HTML>
+<html>
+<style>
+    body {
+        margin: 0px;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    #chart-container {
+        background-color: #1f1f23;
+        position: relative;
+        height: 4000px;
+        width: 4000px;
+        max-height: 100%;
+        max-width: 100%;
+    }
+</style>
+
+<body>
+    <div id="chart-container">
+        <canvas id="chart"></canvas>
+    </div>
+    <script src="https://extension-files.twitch.tv/helper/v1/twitch-ext.min.js"></script>
+    <script src="./Chart.bundle.min.js"></script>
+    <script src="./socket.io.min.js"></script>
+    <script src="./graph.js"></script>
+</body>
+
+</html>

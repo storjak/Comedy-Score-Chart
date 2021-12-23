@@ -3,5 +3,4 @@ back/secrets/*
 front/secrets/*
 node_modules
 .vscode
-Cut
 Scraps

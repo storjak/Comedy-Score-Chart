@@ -1,12 +1,14 @@
 "use strict";
 
+require('cors');
 const app = require('express')(),
-    cors = require('cors'),
     http = require('http').createServer(app),
-    io = require('socket.io')(http, {
+    { Server } = require('socket.io'),
+    io = new Server(http, {
+        serveClient: false,
         cors: {
-            origin: "https://localhost:3000",
-            methods: ["GET", "POST"],
+            origin: [/https?:\/\/localhost:\d{1,5}/i, 'https://2ilkhrt4j2qjfj85s7bxhj560gqnvy.ext-twitch.tv'],
+            methods: "GET",
             credentials: true
         }
     }),
@@ -32,7 +34,7 @@ let chatConStatus,
 
 function authMaintainer(cID, sec) {
     let timeout = keyObj.expiration - 300000;
-    console.log(`Auth maintainer expired, refreshing in ${(timeout/60000).toFixed(1)} minutes.`);
+    console.log(`Auth maintainer expired, refreshing in ${(timeout / 60000).toFixed(1)} minutes.`);
     setTimeout(async () => {
         let maintKey = await core.authConnector(false, cID, sec);
         keyObj = {
