@@ -1,5 +1,6 @@
 const tmi = require('tmi.js');
-const tmiExports = {
+
+module.exports = {
     ChannelData: function () {
         this.total = 0;
         this.rawChat = [];
@@ -79,5 +80,3 @@ const tmiExports = {
         });
     }
 }
-
-module.exports = tmiExports;

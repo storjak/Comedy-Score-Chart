@@ -1,43 +1,55 @@
 "use strict";
 
 require('cors');
-const app = require('express')(),
-    http = require('http').createServer(app),
-    { Server } = require('socket.io'),
+const app =         require('express')(),
+    http =          require('http').createServer(app),
+    { Server } =    require('socket.io'),
     io = new Server(http, {
         serveClient: false,
         cors: {
-            origin: [/https?:\/\/localhost:\d{1,5}/i, 'https://2ilkhrt4j2qjfj85s7bxhj560gqnvy.ext-twitch.tv'],
+            origin: [/https?:\/\/localhost:\d{1,5}/i, 'https://2ilkhrt4j2qjfj85s7bxhj560gqnvy.ext-twitch.tv', 'https://www.twitch.tv'],
             methods: "GET",
             credentials: true
         }
     }),
-    tChat = require('./TMI_api.js'),
-    core = require('./core_api.js'),
-    sensitive = require('./secrets/sensitive.js'),
+    tChat =         require('./modules/TMI_api.js'),
+    core =          require('./modules/core_api.js'),
+    sensitive =     require('./secrets/sensitive.js'),
+    gbvr =          require('./modules/global_vars.js'),
     port = 3001;
 
-// -------------------------------------------------------------------------------------
-// GLOBAL VARIABLES
-
-let chatConStatus,
-    lobbyLeaveTimer,
-    tLeaveTimer,
-    dcTimer,
-    keyObj = {},
-    lobbies = {},
-    channelList = new Map(),
-    userCount = 0;
+/*
+chatConStatus: undefined,
+lobbyLeaveTimer: undefined,
+tLeaveTimer: undefined,
+dcTimer: undefined,
+keyObj: {},
+lobbies: {},
+channelList: new Map(),
+userCount: 0
+*/
 
 // -------------------------------------------------------------------------------------
 // STARTER FUNCTIONS
 
+class Lobby {
+    constructor(channelName) {
+        this.userCount = 0;
+        this.updateTimer = undefined;
+        this.emitter = function (socket) {
+            this.updateTimer = setInterval(() => {
+                socket.to(channelName).volatile.emit("chart update", tChat.channelDataList[channelName].total);
+            }, 2000);
+        };
+    }
+}
+
 function authMaintainer(cID, sec) {
-    let timeout = keyObj.expiration - 300000;
+    let timeout = gbvr.keyObj.expiration - 300000;
     console.log(`Auth maintainer expired, refreshing in ${(timeout / 60000).toFixed(1)} minutes.`);
     setTimeout(async () => {
         let maintKey = await core.authConnector(false, cID, sec);
-        keyObj = {
+        gbvr.keyObj = {
             auth: maintKey.data.access_token,
             expiration: maintKey.data.expires_in
         };
@@ -48,7 +60,7 @@ function authMaintainer(cID, sec) {
 (async function () {
     try {
         let key = await core.authConnector(false, sensitive.clientID, sensitive.apiSecret);
-        keyObj = {
+        gbvr.keyObj = {
             auth: key.data.access_token,
             expiration: key.data.expires_in
         };
@@ -64,60 +76,49 @@ function authMaintainer(cID, sec) {
 // ENDPOINT
 
 http.listen(port, () => {
-    console.log(`Listening on HTTP for Socket.IO, port ${port}`);
+    console.log(`Listening on HTTP for Socket.IO on port ${port}`);
 });
 
-// All the HTML pages above will be hosted by Twitch eventually
 // -------------------------------------------------------------------------------------
 // SOCKET.IO CONNECTION
-
-function Lobby(channelName) {
-    this.userCount = 0;
-    this.updateTimer = undefined;
-    this.emitter = function (socket) {
-        this.updateTimer = setInterval(() => {
-            socket.to(channelName).volatile.emit("chart update", tChat.channelDataList[channelName].total);
-        }, 2000);
-    }
-}
 
 function ioPath() {
     console.log('Socket.IO listening');
     io.on("connection", (socket) => {
         let channelName;
 
-        socket.on('channel info', async (id) => { // "36985393"
+        socket.on('channel info', async (id) => {
             console.log(typeof id);
-            userCount++;
-            console.log(`User connected, usercount: ${userCount}`);
+            gbvr.userCount++;
+            console.log(`User connected, usercount: ${gbvr.userCount}`);
 
             if (id[0] === '.') {
                 channelName = id.substr(1);
             } else {
-                let query = channelList.get(id);
+                let query = gbvr.channelList.get(id);
                 if (query) {
                     channelName = query;
                 } else {
-                    channelName = await core.nameConnector(false, id, sensitive.clientID, keyObj.auth);
+                    channelName = await core.nameConnector(false, id, sensitive.clientID, gbvr.keyObj.auth);
                     channelName = channelName.data.data[0].broadcaster_login;
-                    channelList.set(id, channelName);
+                    gbvr.channelList.set(id, channelName);
                 }
             }
 
             socket.join(channelName);
 
-            if (chatConStatus === false || chatConStatus === undefined) {
+            if (gbvr.chatConStatus === false || gbvr.chatConStatus === undefined) {
                 await tChat.connect();
                 if (tChat.client.readyState() === 'OPEN') {
-                    chatConStatus = true;
+                    gbvr.chatConStatus = true;
                 } else {
                     socket.emit('TMI Failure');
                     return;
                 }
             }
 
-            if (userCount === 1 && dcTimer && dcTimer._destroyed === false) {
-                clearTimeout(dcTimer);
+            if (gbvr.userCount === 1 && gbvr.dcTimer && gbvr.dcTimer._destroyed === false) {
+                clearTimeout(gbvr.dcTimer);
                 console.log("Disconnect timer cancelled.");
             }
 
@@ -131,60 +132,60 @@ function ioPath() {
             //console.log(`User connected, tChat.channelDataList.${channelName}.usercount ${tChat.channelDataList[channelName].viewCount}`);
 
             if (tChat.channelDataList[channelName]) {
-                if (tChat.channelDataList[channelName].viewCount === 1 && tLeaveTimer && tLeaveTimer._destroyed === false) {
-                    clearTimeout(tLeaveTimer);
-                    console.log("tLeaveTimer timer cancelled.");
+                if (tChat.channelDataList[channelName].viewCount === 1 && gbvr.tLeaveTimer && gbvr.tLeaveTimer._destroyed === false) {
+                    clearTimeout(gbvr.tLeaveTimer);
+                    console.log("gbvr.tLeaveTimer timer cancelled.");
                 }
             }
 
-            if (!lobbies[channelName]) {
-                lobbies[channelName] = new Lobby(channelName);
-                lobbies[channelName].emitter(socket);
+            if (!gbvr.lobbies[channelName]) {
+                gbvr.lobbies[channelName] = new Lobby(channelName);
+                gbvr.lobbies[channelName].emitter(socket);
             }
 
-            lobbies[channelName].userCount++;
-            //console.log(`User connected, lobbies.${channelName}.usercount: ${lobbies[channelName].userCount}`);
+            gbvr.lobbies[channelName].userCount++;
+            //console.log(`User connected, gbvr.lobbies.${channelName}.usercount: ${gbvr.lobbies[channelName].userCount}`);
 
-            if (lobbies[channelName]) {
-                if (lobbies[channelName].userCount === 1 && lobbyLeaveTimer && lobbyLeaveTimer._destroyed === false) {
-                    clearTimeout(lobbyLeaveTimer);
-                    console.log("lobbyLeaveTimer timer cancelled.");
+            if (gbvr.lobbies[channelName]) {
+                if (gbvr.lobbies[channelName].userCount === 1 && gbvr.lobbyLeaveTimer && gbvr.lobbyLeaveTimer._destroyed === false) {
+                    clearTimeout(gbvr.lobbyLeaveTimer);
+                    console.log("gbvr.lobbyLeaveTimer timer cancelled.");
                 }
             }
         });
 
         socket.on('disconnect', () => {
-            if (chatConStatus === false || chatConStatus === undefined) {
-                userCount--;
-                console.log(`User disconnected while TMI is down, usercount: ${userCount}`);
+            if (gbvr.chatConStatus === false || gbvr.chatConStatus === undefined) {
+                gbvr.userCount--;
+                console.log(`User disconnected while TMI is down, usercount: ${gbvr.userCount}`);
             } else {
-                userCount--;
-                console.log(`User disconnected, usercount: ${userCount}`);
+                gbvr.userCount--;
+                console.log(`User disconnected, usercount: ${gbvr.userCount}`);
 
-                lobbies[channelName].userCount--;
-                //console.log(`User disconnected, lobbies.${channelName}.userCount: ${lobbies[channelName].userCount}`);
+                gbvr.lobbies[channelName].userCount--;
+                //console.log(`User disconnected, gbvr.lobbies.${channelName}.userCount: ${gbvr.lobbies[channelName].userCount}`);
 
                 tChat.channelDataList[channelName].viewCount--;
                 //console.log(`User disconnected, channelDataList.${channelName}.viewCount--: ${tChat.channelDataList[channelName].viewCount}`);
 
-                if (lobbies[channelName].userCount <= 0) {
-                    lobbyLeaveTimer = setTimeout(() => {
-                        console.log(`lobbies: ${channelName} deleted.`);
-                        clearInterval(lobbies[channelName].updateTimer);
-                        delete lobbies[channelName];
+                if (gbvr.lobbies[channelName].userCount <= 0) {
+                    gbvr.lobbyLeaveTimer = setTimeout(() => {
+                        console.log(`gbvr.lobbies: ${channelName} deleted.`);
+                        clearInterval(gbvr.lobbies[channelName].updateTimer);
+                        delete gbvr.lobbies[channelName];
                     }, 5000);
                 }
 
                 if (tChat.channelDataList[channelName].viewCount <= 0) {
-                    tLeaveTimer = setTimeout(() => {
+                    gbvr.tLeaveTimer = setTimeout(() => {
                         tChat.leave(channelName);
                     }, 5000);
                 }
 
-                if (userCount <= 0) {
-                    dcTimer = setTimeout(async () => {
+                if (gbvr.userCount <= 0) {
+                    gbvr.dcTimer = setTimeout(async () => {
                         await tChat.disconnect();
-                        chatConStatus = false;
+                        gbvr.chatConStatus = false;
                     }, 6000);
                 }
             }

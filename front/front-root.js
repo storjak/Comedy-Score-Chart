@@ -12,11 +12,6 @@ https.listen(port, () => {
     console.log(`Listening on HTTPS for page serving, port ${port}`);
 });
 
-app.use("/", (req, res, next) => {
-    console.dir(req.rawHeaders);
-    next();
-});
-
 app.get("/graph.html", (req, res) => {
     res.sendFile(rootString + './front/pages/graph.html');
 });

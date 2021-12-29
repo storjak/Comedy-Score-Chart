@@ -1,6 +1,6 @@
 const axios = require('axios').default;
 
-const coreExports = {
+module.exports = {
     nameGetter: async function (chId, clId, key) {
         const nameConfig = {
             url: 'https://api.twitch.tv/helix/channels?broadcaster_id=' + chId,
@@ -59,5 +59,3 @@ const coreExports = {
         }
     }
 }
-
-module.exports = coreExports;
